@@ -163,7 +163,7 @@ h1, h2, h3 {
 					    opacity: 0;
 					    bottom: 0;
 					    display: block;
-					    background: url('../img/arrow.png') no-repeat 100% 50%;
+					    background: url('../images/play.png') no-repeat 100% 50%;
 					    height: 30px;
 					    -webkit-transition: all 0.3s ease-out;
 					    -webkit-transition-delay: 0s;
@@ -189,7 +189,7 @@ h1, h2, h3 {
 			    left: 50% !important;
 			    margin-top: -50px;
 			    margin-left: -50px;
-			    background: rgba(0,0,0,0.8) url('../img/video-controls.png') no-repeat 50% 0;
+			    background: rgba(0,0,0,0.8) url('../images/grid.png') no-repeat 50% 0;
 			    position: absolute;
 			    -webkit-transition: all 0.5s ease-out;
 			    cursor: pointer;
@@ -357,15 +357,15 @@ h1, h2, h3 {
 	display: block;
 }
 .control#next {
-	background-image: url('../img/up.png');
+	background-image: url('../images/right.png');
 	top: 230px;
 }
 .control#back {
-	background-image: url('../img/back.png');
+	background-image: url('../images/left.png');
 	top: 310px;
 }
 .control#prev {
-	background-image: url('../img/down.png');
+	background-image: url('../images/grid.png');
 	top: 390px;
 }
 .control:hover {
