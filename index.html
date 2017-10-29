@@ -1,12 +1,9 @@
-
 <!DOCTYPE html>
 <html>
 	<head>
-		<title>three.js css3d stereo - periodic table</title>
+		<title>three.js css3d - periodic table</title>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-		<!--<script src="https://aframe.io/releases/0.2.0/aframe.min.js"></script>
-		-->
 		<style>
 			html, body {
 				height: 100%;
@@ -23,6 +20,8 @@
 				color: #ffffff;
 			}
 
+			
+
 			.element {
 				width: 120px;
 				height: 160px;
@@ -34,48 +33,26 @@
 
 			.element:hover {
 				box-shadow: 0px 0px 12px rgba(0,255,255,0.75);
-				border: 1px solid rgba(127,255,255,0.75);
+				border: 4px solid rgba(127,255,255,0.75);
+
 			}
 
-				.element .number {
-					position: absolute;
-					top: 20px;
-					right: 20px;
-					font-size: 12px;
-					color: rgba(127,255,255,0.75);
-				}
+				
 
-				.element .symbol {
-					position: absolute;
-					top: 40px;
-					left: 0px;
-					right: 0px;
-					font-size: 60px;
-					font-weight: bold;
-					color: rgba(255,255,255,0.75);
-					text-shadow: 0 0 10px rgba(0,255,255,0.95);
-				}
-
-				.element .details {
-					position: absolute;
-					bottom: 15px;
-					left: 0px;
-					right: 0px;
-					font-size: 12px;
-					color: rgba(127,255,255,0.75);
-				}
+			
 		</style>
 	</head>
 	<body>
 		<script src="js/three.js"></script>
 		<script src="js/tween.min.js"></script>
-		<script src="js/DeviceOrientationControls.js"></script>
-		<script src="js/CSS3DStereoRenderer.js"></script>
-		<script src="js/reticulum.js"></script>
+		<script src="js/TrackballControls.js"></script>
+		<script src="js/CSS3DRenderer.js"></script>
+		<script src="js/stats.min.js"></script>
+
 		<div id="container"></div>
+		
 
 		<script>
-
 			var photos = ["1.jpg","18.jpg","35.jpg","52.jpg","69.jpg","86.jpg","103.jpg","120.jpg","136.jpg","154.jpg",
 						"2.jpg","19.jpg","36.jpg","53.jpg","70.jpg","87.jpg","104.jpg","121.jpg","137.jpg","155.jpg",
 						"3.jpg","20.jpg","37.jpg","54.jpg","71.jpg","88.jpg","105.jpg","122.jpg","140.jpg","156.jpg",
@@ -94,62 +71,30 @@
 						"16.jpg","33.jpg","50.jpg","67.jpg","84.jpg","101.jpg","118.jpg","135.jpg","153.jpg",
 						"17.jpg","34.jpg","51.jpg","68.jpg","85.jpg","102.jpg","119.jpg","197.jpg","198.jpg","199.jpg","201.jpg","200.jpg","25.jpg","201.jpg","202.jpg","203.jpg","205.jpg"];
 
-
-			var camera, scene, renderer, reticle;
+			var camera, scene, renderer;
 			var controls;
+			var stats = new Stats();
+			stats.showPanel(0);
+			document.body.appendChild( stats.dom );
 
-			var state = 0;
+
 
 			var objects = [];
 			var targets = { table: [], sphere: [], helix: [], grid: [] };
 
+
 			init();
 			animate();
+			
 
 			function init() {
+				stats.begin();
 
 				camera = new THREE.PerspectiveCamera( 40, window.innerWidth / window.innerHeight, 3, 10000 );
-				camera.position.z = 1500;
-				//reticle = vreticle.Reticle(camera);
-				//alert(reticle);
-				
-				//scene.add(camera);
-//camera.position.set(0, 15, 0);
+				camera.position.z = 3000;
+
 				scene = new THREE.Scene();
-				
-				
 
-// --- Reticulum ---
-// initiate Reticulum so it loads up 
-Reticulum.init(camera, {
-	proximity: false,
-	clickevents: true,
-	reticle: {
-		visible: true,
-		restPoint: 1000, //Defines the reticle's resting point when no object has been targeted
-		color: 0xcc00cc,
-		innerRadius: 0.0001,
-		outerRadius: 0.003,
-		hover: {
-			color: 0x00cccc,
-			innerRadius: 0.02,
-			outerRadius: 0.024,
-			speed: 5,
-			vibrate: 50 //Set to 0 or [] to disable
-		}
-	},
-	fuse: {
-		visible: false,
-		duration: 2.5,
-		color: 0x00fff6,
-		innerRadius: 0.045,
-		outerRadius: 0.06,
-		vibrate: 0, //Set to 0 or [] to disable
-		clickCancelFuse: false //If users clicks on targeted object fuse is canceled
-	}
-});
-
-       
 
 				// table
 
@@ -211,58 +156,40 @@ Reticulum.init(camera, {
 
 				}
 
+				
 
 				//
 
-				renderer = new THREE.CSS3DStereoRenderer();
+				renderer = new THREE.CSS3DRenderer();
 				renderer.setSize( window.innerWidth, window.innerHeight );
 				renderer.domElement.style.position = 'absolute';
 				document.getElementById( 'container' ).appendChild( renderer.domElement );
 
 				//
 
-				controls = new THREE.DeviceOrientationControls( camera );
+				controls = new THREE.TrackballControls( camera, renderer.domElement );
+				controls.rotateSpeed = 0.5;
+				controls.minDistance = 500;
+				controls.maxDistance = 60000;
+				// MAX DISTANCE VALUE CHANGED FROM 6000 TO 500 FOR MAKING THE CAMERA STAY INSIDE THE CENTER OF THE SPHERE.
+				controls.addEventListener( 'change', render );
 
-				transform( targets.table, 5000 );
-
+				transform( targets.sphere, 2000 );
 
 				//
 
 				window.addEventListener( 'resize', onWindowResize, false );
-				scene.add(camera);
 
 			}
 
-			//
-
-			var isFullscreen = false;
-
-			window.addEventListener( 'touchend', function () {
-
-				if ( isFullscreen === false ) {
-
-					document.body.webkitRequestFullscreen();
-
-					isFullscreen = true;
-
-				} else {
-
-					document.webkitExitFullscreen();
-
-					isFullscreen = false;
-
-				}
-
-			} );
-
-			function transform( positions, duration ) {
+			function transform( targets, duration ) {
 
 				TWEEN.removeAll();
 
 				for ( var i = 0; i < objects.length; i ++ ) {
 
 					var object = objects[ i ];
-					var target = positions[ i ];
+					var target = targets[ i ];
 
 					new TWEEN.Tween( object.position )
 						.to( { x: target.position.x, y: target.position.y, z: target.position.z }, Math.random() * duration + duration )
@@ -277,31 +204,10 @@ Reticulum.init(camera, {
 				}
 
 				new TWEEN.Tween( this )
-					.to( {}, duration * 10 )
+					.to( {}, duration * 2 )
 					.onUpdate( render )
-					.onComplete( function () {
-
-						switch ( state ) {
-							case 0:
-								transform( targets.sphere, 2000 );
-								break;
-							case 1:
-								transform( targets.helix, 2000 );
-								break;
-							case 2:
-								transform( targets.grid, 2000 );
-								break;
-							case 3:
-								transform( targets.table, 2000 );
-								break;
-						}
-
-						state = state ;
-
-						if ( state > 3 ) state = 0;
-
-					})
 					.start();
+					stats.begin();
 
 			}
 
@@ -316,24 +222,32 @@ Reticulum.init(camera, {
 
 			}
 
-			function animate() {
+			
 
+			function animate() {
+				
+				stats.end();
 				requestAnimationFrame( animate );
 
 				TWEEN.update();
 
 				controls.update();
 
-				render();
+				
 
 			}
+			
 
 			function render() {
 
 				renderer.render( scene, camera );
 
 			}
+			javascript:(function(){var script=document.createElement('script');script.onload=function(){var stats=new Stats();document.body.appendChild(stats.dom);requestAnimationFrame(function loop(){stats.update();requestAnimationFrame(loop)});};script.src='//rawgit.com/mrdoob/stats.js/master/build/stats.min.js';document.head.appendChild(script);})()
+
+
 
 		</script>
+
 	</body>
 </html>
